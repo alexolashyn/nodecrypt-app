@@ -1,0 +1,36 @@
+{
+  "title": "Files",
+  "upload": "Upload file",
+  "loading": "Loading files...",
+  "empty": "No files yet",
+  "loadMore": "Load more",
+  "open": "Open",
+  "delete": "Delete",
+  "working": "Working...",
+  "retry": "Retry",
+  "dismiss": "Dismiss",
+  "unreadableName": "Name could not be decrypted",
+  "uploaded": "“{{name}}” uploaded and pinned.",
+  "deleted": "File deleted.",
+  "deletedNotReleased": "File removed from the registry. The storage server did not confirm releasing it yet — that only leaves a spare copy.",
+  "confirmDeleteTitle": "Delete file?",
+  "confirmDelete":"Delete “{{name}}”? This sends a transaction.",
+  "registeredNotUploaded": "The file is already registered on-chain; retrying only re-sends the encrypted bytes, no new transaction.",
+  "stage": {
+    "checking": "Checking limits...",
+    "encrypting": "Encrypting",
+    "hashing": "Computing CID...",
+    "registering": "Confirm in wallet, then waiting for the block...",
+    "uploading": "Uploading...",
+    "retrying": "Server busy, retry {{attempt}}..."
+  },
+  "subtitle": "End-to-end encrypted on your device, stored on IPFS.",
+  "dropHere": "Drop to encrypt and upload",
+  "emptyHint": "Drop a file here or click to choose one.",
+  "steps": {
+    "encrypt": "Encrypt",
+    "cid": "CID",
+    "chain": "On-chain",
+    "upload": "Upload"
+  }
+}

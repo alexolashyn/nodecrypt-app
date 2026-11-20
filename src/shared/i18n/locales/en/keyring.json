@@ -1,0 +1,27 @@
+{
+  "checking": "Checking your profile...",
+  "retry": "Try again",
+  "genericError": "Something went wrong.",
+  "setup": {
+    "title": "Encryption key",
+    "subtitle": "Create a key only you can reproduce.",
+    "badges": {
+      "signatures": "2 signatures",
+      "transaction": "1 transaction"
+    },
+    "button": {
+      "idle": "Create key",
+      "signing": "Sign in your wallet...",
+      "registering": "Writing to the blockchain..."
+    }
+  },
+  "unlock": {
+    "title": "Unlock your data",
+    "subtitle": "One signature. No transaction, no gas.",
+    "cancel": "Cancel",
+    "button": {
+      "idle": "Unlock",
+      "pending": "Unlocking..."
+    }
+  }
+}

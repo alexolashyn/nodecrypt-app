@@ -1,0 +1,12 @@
+{
+  "nav": {
+    "files": "Files",
+    "plan": "Plan",
+    "security": "Security"
+  },
+  "unlock": "Unlock",
+  "lockedHint": {
+    "files": "Unlock to see and manage your encrypted files.",
+    "security": "Unlock to rotate your keys."
+  }
+}

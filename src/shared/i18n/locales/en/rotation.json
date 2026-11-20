@@ -1,0 +1,49 @@
+{
+  "title": "Key rotation",
+  "start": "Rotate",
+  "running": "Running...",
+  "blockedByMigration": "Finish the interrupted master key rotation first.",
+  "identity": {
+    "title": "Identity key",
+    "description": "A new key derived from your wallet signature; the master key is re-sealed to it. Files are untouched.",
+    "confirm": "Rotate your identity key? You will sign twice and send one transaction.",
+    "done": "Identity key rotated.",
+    "cost": "2 signatures · 1 tx"
+  },
+  "masterKey": {
+    "title": "Master key",
+    "description": "A new master key; every file key is re-wrapped under it. Can be resumed if interrupted.",
+    "confirm": "Rotate your master key? This sends several transactions; if interrupted, you can resume after unlocking.",
+    "done": "Master key rotated.",
+    "cost": "~3 tx + 1 per 50 files"
+  },
+  "full": {
+    "title": "Full re-encryption",
+    "description": "Every file is downloaded, re-encrypted under a new file key and uploaded again. The slowest and most thorough.",
+    "confirm": "Re-encrypt all files? Each file costs two transactions and is downloaded and uploaded again.",
+    "done": "All files re-encrypted.",
+    "cost": "2 tx per file"
+  },
+  "banner": {
+    "title": "Unfinished master key rotation",
+    "inProgress": "A master key rotation was interrupted. Your files are safe — some are already on the new key. Continue to finish it.",
+    "needsCleanup": "The new master key is active; one cleanup transaction is still missing.",
+    "unreadable": "A parked master key exists but cannot be opened with your current identity key. Do not clear it — contact support.",
+    "continue": "Continue rotation"
+  },
+  "stage": {
+    "signing": "Sign in your wallet...",
+    "sealing": "Sealing keys...",
+    "parking": "Parking the new key on-chain...",
+    "rewrapping": "Re-wrapping file keys",
+    "committing": "Committing to the profile...",
+    "verifying": "Verifying...",
+    "cleanup": "Clearing the parked key...",
+    "downloading": "Downloading and decrypting",
+    "reuploading": "Re-uploading",
+    "removing": "Removing the old copy"
+  },
+  "subtitle": "Replace keys if you suspect one was exposed. Each step is safe to resume.",
+  "identityVersion": "Identity key",
+  "masterKeyVersion": "Master key"
+}

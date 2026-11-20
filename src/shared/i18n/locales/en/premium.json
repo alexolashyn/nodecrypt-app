@@ -1,0 +1,28 @@
+{
+  "title": "Storage plan",
+  "loading": "Loading plan...",
+  "tier": {
+    "free": "Free",
+    "premium": "Premium"
+  },
+  "limit": "Max file size",
+  "expires": "Premium until",
+  "never": "—",
+  "expired": "expired",
+  "upgradeHint": "Premium raises the per-file limit to {{max}}.",
+  "periods": "Periods ({{days}} days each)",
+  "buying": "Confirm in wallet...",
+  "pricePerPeriod": "{{amount}} ETH per period",
+  "noRefunds": "no refunds",
+  "paused": "Purchases are paused right now.",
+  "disabled": "Purchases are currently disabled.",
+  "success": "Premium activated.",
+  "daysLeft_one": "{{count}} day left",
+  "daysLeft_other": "{{count}} days left",
+  "total": "Total",
+  "newExpiry": "New expiry",
+  "buyShort": "Buy premium",
+  "extendShort": "Extend premium",
+  "decrease": "Fewer periods",
+  "increase": "More periods"
+}

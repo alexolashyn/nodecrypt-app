@@ -1,0 +1,63 @@
+{
+  "contract": {
+    "profileAlreadyExists": "A profile is already registered for this address.",
+    "profileNotFound": "No profile found for this address.",
+    "invalidPublicKey": "The contract rejected the public key.",
+    "invalidWrappedKey": "The contract rejected the sealed master key.",
+    "identityKeyUnchanged": "The new identity key is the same as the current one.",
+    "rejected": "You cancelled the request in your wallet.",
+    "insufficientFunds": "Not enough funds to cover gas.",
+    "noReceipt": "The transaction was sent but never confirmed.",
+    "unknown": "The contract operation failed."
+  },
+  "wallet": {
+    "notFound": "No wallet found. Install MetaMask or another EIP-1193 wallet.",
+    "wrongChain": "Please switch your wallet to the Base Sepolia network.",
+    "chainNotAdded": "Base Sepolia is not set up in your wallet — add it and try again.",
+    "accountMismatch": "Your wallet is on a different account than the one you signed in with. Switch back and try again."
+  },
+  "crypto": {
+    "unsealFailed": "Could not unwrap your master key.",
+    "unlockCancelled": "Unlock cancelled.",
+    "selfCheckFailed": "Key self-check failed; nothing was written to the blockchain.",
+    "unsupportedWallet": "Your wallet produces non-deterministic signatures (smart wallet / passkey / MPC). Please use a regular wallet such as MetaMask.",
+    "derivationFailed": "Could not derive an encryption key. Please try again.",
+    "keyMismatch": "This key does not match the stored profile — possibly a different wallet, or the signing method changed."
+  },
+  "files": {
+    "staleMasterKey": "Your master key version changed. Unlock again and retry.",
+    "keyringStale": "Your keys changed on another device. Unlock again to continue.",
+    "invalidFileId": "Invalid file identifier.",
+    "alreadyExists": "This file is already registered.",
+    "invalidCid": "The contract rejected the content identifier.",
+    "invalidMeta": "The file metadata is too large.",
+    "invalidSize": "Empty files cannot be uploaded.",
+    "tooLarge": "The file is too large for your plan ({{size}}, limit {{max}}).",
+    "notFound": "File not found.",
+    "alreadyRemoved": "This file was already deleted.",
+    "decryptFailed": "The file could not be decrypted — it was modified or belongs to another key.",
+    "gatewayUnavailable": "The IPFS gateway did not return the file. Try again later."
+  },
+  "upload": {
+    "rejected": "The server rejected the upload: the bytes do not match the on-chain record.",
+    "notRegistered": "The server does not see this file on-chain yet.",
+    "removed": "This file was deleted on-chain, so it can no longer be uploaded.",
+    "tooLarge": "The file exceeds the server's upload limit.",
+    "quorum": "Not enough storage providers accepted the file. Nothing is lost — try again.",
+    "busy": "The server stayed busy. Try again in a minute.",
+    "network": "Network error during upload.",
+    "unknown": "Upload failed."
+  },
+  "tier": {
+    "invalidPeriods": "Choose between 1 and the maximum number of periods.",
+    "paymentDisabled": "Purchases are currently disabled.",
+    "incorrectEthAmount": "The payment amount did not match the current price.",
+    "priceChanged": "The price changed. Check the new amount and try again.",
+    "paused": "Purchases are paused right now."
+  },
+  "rotation": {
+    "migrationPending": "A master key rotation is unfinished. Complete it first.",
+    "nothingToResume": "There is no rotation to continue.",
+    "filesKeepChanging": "Files kept changing during the rotation. Run it again."
+  }
+}

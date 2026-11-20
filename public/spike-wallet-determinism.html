@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wallet Determinism Spike</title>
+<style>
+  :root { color-scheme: light dark; --bg:#fff; --fg:#111; --mut:#666; --bd:#ddd; --ok:#0a7d3f; --bad:#c62828; --card:#fafafa; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#131313; --fg:#eee; --mut:#999; --bd:#333; --ok:#4ade80; --bad:#f87171; --card:#1c1c1c; }
+  }
+  body { background:var(--bg); color:var(--fg); font:15px/1.6 ui-sans-serif,system-ui,sans-serif;
+         max-width:760px; margin:0 auto; padding:32px 16px; }
+  h1 { font-size:20px; margin:0 0 4px; }
+  p.sub { color:var(--mut); margin:0 0 24px; }
+  button { font:inherit; padding:9px 16px; border:1px solid var(--bd); border-radius:8px;
+           background:var(--card); color:var(--fg); cursor:pointer; margin:0 8px 8px 0; }
+  button:hover:not(:disabled) { border-color:var(--mut); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  pre { background:var(--card); border:1px solid var(--bd); border-radius:8px; padding:12px;
+        overflow-x:auto; font-size:12.5px; white-space:pre-wrap; word-break:break-all; }
+  .ok { color:var(--ok); font-weight:600; }
+  .bad { color:var(--bad); font-weight:600; }
+  .step { border-top:1px solid var(--bd); padding-top:20px; margin-top:24px; }
+  code { background:var(--card); padding:1px 5px; border-radius:4px; font-size:13px; }
+</style>
+</head>
+<body>
+
+<h1>Wallet determinism spike</h1>
+<p class="sub">Validates that re-signing a fixed message yields byte-identical signatures &mdash; the assumption the whole key-derivation scheme rests on.</p>
+
+<div class="step">
+  <strong>1. Connect</strong>
+  <p class="sub">Test each wallet you intend to support, plus a hardware wallet if you have one.</p>
+  <button id="connect">Connect wallet</button>
+  <pre id="acct">not connected</pre>
+</div>
+
+<div class="step">
+  <strong>2. Sign twice in this session</strong>
+  <button id="p191" disabled>personal_sign &times;2</button>
+  <button id="p712" disabled>signTypedData_v4 &times;2</button>
+  <pre id="same">—</pre>
+</div>
+
+<div class="step">
+  <strong>3. Sign across sessions</strong>
+  <p class="sub">The real test. Sign, then <em>fully reload</em> (or restart the browser) and sign again &mdash; the result is compared against the stored value.</p>
+  <button id="persist" disabled>Sign &amp; compare to stored</button>
+  <button id="clear">Clear stored</button>
+  <pre id="across">—</pre>
+</div>
+
+<script type="module">
+const MSG = "NodeCrypt Key Derivation\nVersion: 1\n\nThis signature derives your encryption keys.\nNever sign this message on any other site.";
+const KEY = "spike.sig.v1";
+
+let account = null;
+const $ = (id) => document.getElementById(id);
+const ok  = (t) => `<span class="ok">${t}</span>`;
+const bad = (t) => `<span class="bad">${t}</span>`;
+
+function typedData(address, chainId) {
+  return {
+    domain: { name: "NodeCrypt", version: "1", chainId: Number(chainId) },
+    types: {
+      EIP712Domain: [
+        { name: "name", type: "string" },
+        { name: "version", type: "string" },
+        { name: "chainId", type: "uint256" },
+      ],
+      KeyDerivation: [
+        { name: "owner", type: "address" },
+        { name: "keyVersion", type: "uint32" },
+      ],
+    },
+    primaryType: "KeyDerivation",
+    message: { owner: address, keyVersion: 1 },
+  };
+}
+
+$("connect").onclick = async () => {
+  if (!window.ethereum) { $("acct").textContent = "No injected wallet found."; return; }
+  const [a] = await window.ethereum.request({ method: "eth_requestAccounts" });
+  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  account = a;
+  $("acct").innerHTML = `account : ${a}\nchainId : ${parseInt(chainId, 16)}`;
+  for (const id of ["p191", "p712", "persist"]) $(id).disabled = false;
+};
+
+const signPersonal = () =>
+  window.ethereum.request({ method: "personal_sign", params: [MSG, account] });
+
+const signTyped = async () => {
+  const chainId = await window.ethereum.request({ method: "eth_chainId" });
+  return window.ethereum.request({
+    method: "eth_signTypedData_v4",
+    params: [account, JSON.stringify(typedData(account, BigInt(chainId)))],
+  });
+};
+
+async function twice(fn, label) {
+  $("same").textContent = "signing (approve both prompts)…";
+  try {
+    const a = await fn();
+    const b = await fn();
+    $("same").innerHTML =
+      `${label}\n\nsig #1 : ${a}\nsig #2 : ${b}\n\n` +
+      (a === b ? ok("PASS — identical, derivation is viable")
+               : bad("FAIL — non-deterministic, this wallet cannot be used for derivation"));
+  } catch (e) { $("same").innerHTML = bad("error: " + (e.message ?? e)); }
+}
+
+$("p191").onclick = () => twice(signPersonal, "personal_sign (EIP-191)");
+$("p712").onclick = () => twice(signTyped, "eth_signTypedData_v4 (EIP-712)");
+
+$("persist").onclick = async () => {
+  try {
+    const sig = await signPersonal();
+    const stored = localStorage.getItem(KEY);
+    if (!stored) {
+      localStorage.setItem(KEY, sig);
+      $("across").innerHTML = `stored : ${sig}\n\n` + ok("Stored. Now fully reload the page and click again.");
+    } else {
+      $("across").innerHTML =
+        `stored : ${stored}\nnow    : ${sig}\n\n` +
+        (stored === sig ? ok("PASS — stable across sessions")
+                        : bad("FAIL — signature changed between sessions"));
+    }
+  } catch (e) { $("across").innerHTML = bad("error: " + (e.message ?? e)); }
+};
+
+$("clear").onclick = () => { localStorage.removeItem(KEY); $("across").textContent = "cleared"; };
+</script>
+</body>
+</html>

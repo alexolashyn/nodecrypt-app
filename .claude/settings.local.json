@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/alexandra/Private/master-project && cat nodecrypt-app/src/web3/fileRegistry.ts | sed -n 1,120p; grep -n \"function \\\\|error \\\\|event \" nodecrypt-dapp/contracts/*.sol; ls nodecrypt-dapp/test nodecrypt-dapp/scripts nodecrypt-dapp/contracts; cat nodecrypt-dapp/hardhat.config.ts; cat nodecrypt-app/.env.example; sed -n 1,40p nodecrypt-app/src/features/rotation/service.ts)",
+      "Read(//Users/alexandra/Private/master-project/**)"
+    ]
+  }
+}
