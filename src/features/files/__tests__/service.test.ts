@@ -8,12 +8,18 @@ import { ApiError, apiClient } from '@/shared/api/client';
 import { addFile, getFile, type NewFile } from '@/web3/fileRegistry';
 import type { FileRecord } from '@/web3/types';
 import { UploadError } from '../api';
-import { openFile, pushUpload, registerUpload } from '../service';
+import { ContentMismatchError, openFile, pushUpload, registerUpload } from '../service';
 
 const ADDRESS = '0x1234567890abcdef1234567890abcdef12345678';
 
 const generatedKeys = vi.hoisted(() => [] as { live: Uint8Array; copy: Uint8Array }[]);
 
+const GATEWAYS = vi.hoisted(() => ['https://gw-a.test', 'https://gw-b.test']);
+
+vi.mock('@/config', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  IPFS_GATEWAY_URLS: GATEWAYS,
+}));
 vi.mock('@/web3/wallet', () => ({
   connectAs: vi.fn(async () => ({ provider: {}, signer: {}, address: ADDRESS })),
 }));
@@ -119,23 +125,59 @@ describe('scenario 1: a changed container byte is detected', () => {
     expect(meta).toEqual({ name: NAME, type: TYPE });
   });
 
-  it.each([0, 8, 100, -1])('flipping byte %i changes the CID and makes decryption fail', async (at) => {
+  it.each([0, 8, 100, -1])('flipping byte %i changes the CID and the download is rejected', async (at) => {
     const { onChain, body } = await uploadThroughClient(plaintext(20 * 1024));
     const tampered = body.slice();
     tampered[at < 0 ? tampered.length + at : at] ^= 0x01;
 
     expect((await computeCid(new Blob([tampered]))).bytes).not.toEqual(onChain.cid);
 
-    serveFromGateway(tampered);
-    await expect(openUploaded(onChain)).rejects.toBeInstanceOf(FileDecryptError);
+    const fetchSpy = serveFromGateway(tampered);
+    await expect(openUploaded(onChain)).rejects.toBeInstanceOf(ContentMismatchError);
+    expect(fetchSpy).toHaveBeenCalledTimes(GATEWAYS.length);
   });
 
-  it('a container swapped for another file of the same owner fails to decrypt', async () => {
+  it('a container swapped for another file of the same owner is rejected', async () => {
     const first = await uploadThroughClient(plaintext(4 * 1024));
     const second = await uploadThroughClient(plaintext(4 * 1024));
     serveFromGateway(second.body);
 
-    await expect(openUploaded(first.onChain)).rejects.toBeInstanceOf(FileDecryptError);
+    await expect(openUploaded(first.onChain)).rejects.toBeInstanceOf(ContentMismatchError);
+  });
+
+  it('skips a gateway that serves foreign content and uses the next one', async () => {
+    const plain = plaintext(8 * 1024);
+    const { onChain, body } = await uploadThroughClient(plain);
+    const tampered = body.slice();
+    tampered[50] ^= 0x01;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) =>
+      new Response(new Blob([String(input).startsWith(GATEWAYS[0]) ? tampered : body])),
+    );
+
+    const { blob } = await openUploaded(onChain);
+
+    expect(await bytesOf(blob)).toEqual(plain);
+  });
+
+  it('reports an unavailable gateway separately from a content mismatch', async () => {
+    const { onChain } = await uploadThroughClient(plaintext(1024));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(null, { status: 504 }));
+
+    await expect(openUploaded(onChain)).rejects.toMatchObject({ key: 'errors:files.gatewayUnavailable' });
+  });
+
+  it('a CID-valid container under a wrong file key still fails GCM authentication', async () => {
+    const { onChain, body } = await uploadThroughClient(plaintext(4 * 1024));
+    const other = await uploadThroughClient(plaintext(4 * 1024));
+    serveFromGateway(body);
+    vi.mocked(getFile).mockResolvedValue({
+      ...recordOf(onChain),
+      wrappedFileKey: new Uint8Array(other.onChain.wrappedFileKey),
+    });
+
+    await expect(openFile({} as Provider, keyring, ADDRESS, onChain.fileId)).rejects.toBeInstanceOf(
+      FileDecryptError,
+    );
   });
 });
 
