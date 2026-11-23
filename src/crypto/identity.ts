@@ -83,6 +83,12 @@ export const signDerivationMessage = async (
   return first;
 };
 
+export const matchesPublicKey = (
+  identity: Pick<IdentityKey, 'x' | 'yOdd'>,
+  pubKeyX: string,
+  pubKeyYOdd: boolean,
+): boolean => pubKeyYOdd === identity.yOdd && bytesEqual(hexToBytes(pubKeyX), identity.x);
+
 export const deriveIdentityKey = async (
   signatureBytes: Bytes,
   address: string,
