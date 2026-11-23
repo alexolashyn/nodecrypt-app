@@ -1,4 +1,5 @@
 import type { Provider } from 'ethers';
+import type { CID } from 'multiformats/cid';
 import { IPFS_GATEWAY_URLS } from '@/config';
 import { wipe } from '@/crypto/bytes';
 import { cidFromBytes, computeCid } from '@/crypto/cid';
@@ -234,20 +235,65 @@ export const loadFilesPage = async (
   return { entries, nextOffset: next, total };
 };
 
-const fetchFromGateways = async (cid: string): Promise<Response> => {
+export class ContentMismatchError extends AppError {
+  constructor(detail?: string) {
+    super('errors:files.cidMismatch', detail);
+    this.name = 'ContentMismatchError';
+  }
+}
+
+const readBody = async (
+  body: ReadableStream<Uint8Array>,
+  total: number,
+  onProgress?: ProgressFn,
+): Promise<Blob> => {
+  const reader = body.getReader();
+  const parts: BlobPart[] = [];
+  let received = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      parts.push(value as Uint8Array<ArrayBuffer>);
+      received += value.length;
+      onProgress?.(Math.min(received, total), total);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return new Blob(parts, { type: 'application/octet-stream' });
+};
+
+const fetchVerified = async (
+  expected: CID,
+  total: number,
+  onProgress?: ProgressFn,
+): Promise<Blob> => {
   const failures: string[] = [];
+  let mismatch = false;
 
   for (const base of IPFS_GATEWAY_URLS) {
+    let container: Blob;
     try {
-      const response = await fetch(`${base}/ipfs/${cid}`);
-      if (response.ok && response.body) return response;
-      failures.push(`${base}: HTTP ${response.status}`);
-      void response.body?.cancel();
+      const response = await fetch(`${base}/ipfs/${expected.toString()}`);
+      if (!response.ok || !response.body) {
+        failures.push(`${base}: HTTP ${response.status}`);
+        void response.body?.cancel();
+        continue;
+      }
+      container = await readBody(response.body, total, onProgress);
     } catch (error) {
       failures.push(`${base}: ${error instanceof Error ? error.message : 'network error'}`);
+      continue;
     }
+
+    const actual = await computeCid(container);
+    if (actual.equals(expected)) return container;
+    mismatch = true;
+    failures.push(`${base}: content hashes to ${actual.toString()}`);
   }
 
+  if (mismatch) throw new ContentMismatchError(failures.join('; '));
   throw new AppError('errors:files.gatewayUnavailable', failures.join('; '));
 };
 
@@ -275,17 +321,18 @@ export const openFile = async (
     const meta = await decryptMeta(fileKey, record.fileId, record.encryptedMeta).catch(
       (): FileMeta => ({ name: 'file', type: '' }),
     );
-    const cid = cidFromBytes(record.cid).toString();
-
-    const response = await fetchFromGateways(cid);
+    const container = await fetchVerified(
+      cidFromBytes(record.cid),
+      Number(record.sizeBytes),
+      onProgress,
+    );
 
     const blob = await decryptContainer(
-      response.body!,
+      container.stream(),
       fileKey,
       record.fileId,
-      Number(record.sizeBytes),
+      container.size,
       meta.type,
-      onProgress,
     );
     return { blob, meta };
   } finally {

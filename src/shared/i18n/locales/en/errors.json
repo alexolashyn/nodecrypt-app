@@ -36,7 +36,8 @@
     "notFound": "File not found.",
     "alreadyRemoved": "This file was already deleted.",
     "decryptFailed": "The file could not be decrypted — it was modified or belongs to another key.",
-    "gatewayUnavailable": "The IPFS gateway did not return the file. Try again later."
+    "gatewayUnavailable": "The IPFS gateway did not return the file. Try again later.",
+    "cidMismatch": "The gateway returned content that does not match the registry record. The file was not opened."
   },
   "upload": {
     "rejected": "The server rejected the upload: the bytes do not match the on-chain record.",
