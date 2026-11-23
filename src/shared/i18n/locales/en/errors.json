@@ -46,7 +46,8 @@
     "quorum": "Not enough storage providers accepted the file. Nothing is lost — try again.",
     "busy": "The server stayed busy. Try again in a minute.",
     "network": "Network error during upload.",
-    "unknown": "Upload failed."
+    "unknown": "Upload failed.",
+    "cidMismatch": "The server stored content that does not match the on-chain record. Do not rely on this copy; delete the file and upload it again."
   },
   "tier": {
     "invalidPeriods": "Choose between 1 and the maximum number of periods.",

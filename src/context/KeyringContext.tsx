@@ -2,7 +2,11 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { CHAIN_ID } from '@/config';
 import { bytesEqual, bytesToHex, hexToBytes, wipe } from '@/crypto/bytes';
 import { seal, unseal } from '@/crypto/ecies';
-import { deriveIdentityKey, signDerivationMessage } from '@/crypto/identity';
+import {
+  deriveIdentityKey,
+  matchesPublicKey,
+  signDerivationMessage,
+} from '@/crypto/identity';
 import {
   generateMasterKeyBytes,
   importMasterKey,
@@ -131,9 +135,7 @@ export function KeyringProvider({ children }: { children: ReactNode }) {
 
       const stored = await getProfile(wallet.provider, wallet.address);
       const storedMatches =
-        stored.exists &&
-        stored.pubKeyYOdd === identity.yOdd &&
-        bytesEqual(hexToBytes(stored.pubKeyX), identity.x);
+        stored.exists && matchesPublicKey(identity, stored.pubKeyX, stored.pubKeyYOdd);
       if (!storedMatches) {
         wipe(masterKeyBytes);
         throw new AppError('errors:crypto.selfCheckFailed');
@@ -182,10 +184,7 @@ export function KeyringProvider({ children }: { children: ReactNode }) {
       );
       wipe(signature);
 
-      const matchesProfile =
-        profile.pubKeyYOdd === identity.yOdd &&
-        bytesEqual(hexToBytes(profile.pubKeyX), identity.x);
-      if (!matchesProfile) {
+      if (!matchesPublicKey(identity, profile.pubKeyX, profile.pubKeyYOdd)) {
         throw new AppError('errors:crypto.keyMismatch');
       }
 

@@ -30,7 +30,7 @@ import { getProfile } from '@/web3/profileRegistry';
 import { getMaxFileBytes } from '@/web3/storageTier';
 import type { FileRecord } from '@/web3/types';
 import { connectAs } from '@/web3/wallet';
-import { type FileStatus, releaseRemote, uploadContainer } from './api';
+import { type FileStatus, UploadError, releaseRemote, uploadContainer } from './api';
 
 export type UploadStage =
   | 'checking'
@@ -50,6 +50,7 @@ export interface RegisteredUpload {
   fileId: string;
   name: string;
   container: Blob;
+  cid: string;
 }
 
 const toFraction =
@@ -136,7 +137,7 @@ export const registerUpload = async (
     throw decodeFileRegistryError(error);
   }
 
-  return { fileId, name: file.name, container };
+  return { fileId, name: file.name, container, cid: cid.toString() };
 };
 
 export const pushUpload = async (
@@ -144,9 +145,17 @@ export const pushUpload = async (
   onProgress: (p: UploadProgress) => void,
 ): Promise<FileStatus> => {
   onProgress({ stage: 'uploading' });
-  return uploadContainer(upload.fileId, upload.container, (attempt) =>
+  const status = await uploadContainer(upload.fileId, upload.container, (attempt) =>
     onProgress({ stage: 'retrying', attempt }),
   );
+  if (status.cid !== upload.cid) {
+    throw new UploadError(
+      'errors:upload.cidMismatch',
+      false,
+      `server cid=${status.cid}, on-chain cid=${upload.cid}`,
+    );
+  }
+  return status;
 };
 
 export interface FileEntry {
