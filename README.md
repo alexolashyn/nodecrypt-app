@@ -1,6 +1,6 @@
 # NodeCrypt App
 
-NodeCrypt is an end-to-end encrypted file storage dApp. This is its web client: files are encrypted in the browser before they leave the device, registered on-chain (Base Sepolia), and stored on IPFS through [nodecrypt-backend](../nodecrypt-backend). Neither the server nor the storage providers ever see plaintext or keys.
+NodeCrypt is an end-to-end encrypted file storage dApp. This is its web client: files are encrypted in the browser before they leave the device, registered on-chain (Base Sepolia), and stored on IPFS through [nodecrypt-backend](https://github.com/alexolashyn/nodecrypt-backend). Neither the server nor the storage providers ever see plaintext or keys.
 
 - **Identity** — signing in with an Ethereum wallet (SIWE); the encryption identity is a P-256 key derived from a wallet signature, so nothing secret is stored.
 - **Encryption** — a master key sealed to the identity key (ECIES), a random key per file wrapped under the master key, AES-256-GCM in 1 MiB chunks for content and metadata.
