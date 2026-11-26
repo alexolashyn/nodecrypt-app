@@ -11,7 +11,7 @@ Built with React, Vite, Tailwind, ethers.js v6 and the Web Crypto API; available
 
 ## Setup
 
-Requirements: Node.js 22.12+, a browser wallet such as MetaMask on Base Sepolia, a running [nodecrypt-backend](../nodecrypt-backend), and the contracts deployed from [nodecrypt-dapp](../nodecrypt-dapp).
+Requirements: Node.js 22.12+, a browser wallet such as MetaMask on Base Sepolia, a running [nodecrypt-backend](https://github.com/alexolashyn/nodecrypt-backend), and the smart-contracts deployed.
 
 ```bash
 npm ci
